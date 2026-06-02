@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kamboz.dev | Developer Portfolio</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700&family=JetBrains+Mono:wght@400;700&family=Noto+Sans+JP:wght@700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style type="text/tailwindcss">
+        /* Force Class-based Dark Mode for Tailwind v4 */
+        @custom-variant dark (&:where(.dark, .dark *));
+
+        /* Global Theme Variables */
+        :root {
+            --bg-light: #FAFAFA;
+            --bg-dark: #050505;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: var(--bg-light);
+            color: #111;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .dark body {
+            background-color: var(--bg-dark);
+            color: #f4f4f5;
+        }
+        
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        .font-jp { font-family: 'Noto Sans JP', sans-serif; }
+
+        /* Dynamic Cursor Glow */
+        .grid-glow {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            background: radial-gradient(circle 600px at var(--mouse-x, 50vw) var(--mouse-y, 50vh), rgba(204, 255, 0, 0.07), transparent 40%);
+            will-change: background;
+        }
+        .dark .grid-glow {
+            background: radial-gradient(circle 600px at var(--mouse-x, 50vw) var(--mouse-y, 50vh), rgba(204, 255, 0, 0.12), transparent 40%);
+        }
+
+        /* Stack Card Logic (No rounded corners!) */
+        .stack-card {
+            position: sticky;
+            border-radius: 0px !important; 
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+        .stack-1 { top: 100px; z-index: 10; }
+        .stack-2 { top: 140px; z-index: 20; }
+        .stack-3 { top: 180px; z-index: 30; }
+
+        /* Button Center-Out Radial Animation */
+        .btn-radial {
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        .btn-radial::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background-color: var(--hover-color);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.4s ease-out, height 0.4s ease-out;
+            z-index: -1;
+        }
+        .btn-radial:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+        .btn-radial:hover {
+            color: #000 !important;
+            border-color: transparent !important;
+        }
+        .dark .btn-radial-secondary:hover {
+            color: #000 !important;
+        }
+        .btn-radial-secondary:hover {
+            color: #fff !important;
+        }
+
+        /* Card Center-Out Radial Animation */
+        .card-radial {
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        .card-radial::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background-color: var(--hover-color);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.4s ease-out, height 0.4s ease-out;
+            z-index: -1;
+        }
+        .card-radial:hover::before {
+            width: 450px;
+            height: 450px;
+        }
+        .card-radial:hover {
+            border-color: transparent !important;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #888; border-radius: 0px; }
+        ::-webkit-scrollbar-thumb:hover { background: #CCFF00; }
+
+        /* Marquee Animation */
+        @keyframes marquee {
+            0% { transform: translateX(0%); }
+            100% { transform: translateX(calc(-50% - 0.75rem)); }
+        }
+        .animate-marquee {
+            animation: marquee 30s linear infinite;
+        }
+    </style>
+</head>
+
+<body class="antialiased overflow-x-hidden selection:bg-[#CCFF00] selection:text-black relative bg-[#FAFAFA] text-[#111] dark:bg-[#050505] dark:text-[#f4f4f5]">
+
+    <!-- Dynamic Star Background -->
+    <canvas id="star-canvas" class="fixed inset-0 z-0 pointer-events-none transition-opacity duration-300"></canvas>
+
+    <!-- Navigation -->
+    <nav id="main-nav" class="fixed w-full top-0 z-50 bg-[#FAFAFA]/90 dark:bg-[#050505]/90 backdrop-blur-md border-b border-black/5 dark:border-white/5 transition-all duration-300 transform translate-y-0">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-2 group cursor-pointer">
+                <i data-lucide="hexagon" class="text-[#00E5FF] group-hover:text-[#CCFF00] transition-colors"></i>
+                <span class="font-bold text-xl tracking-tighter uppercase text-gray-900 dark:text-white group-hover:text-[#CCFF00] transition-colors">Kamboz.dev</span>
+            </div>
+            
+            <div class="hidden md:flex items-center gap-6 font-mono text-sm">
+                <a href="#work" style="--hover-color: #CCFF00;" class="btn-radial px-4 py-2 text-gray-700 dark:text-gray-400 hover:text-black dark:hover:text-black transition-colors flex items-center gap-2">
+                    <span class="text-xs opacity-50">01.</span> Work
+                </a>
+                <a href="#skills" style="--hover-color: #00E5FF;" class="btn-radial px-4 py-2 text-gray-700 dark:text-gray-400 hover:text-black dark:hover:text-black transition-colors flex items-center gap-2">
+                    <span class="text-xs opacity-50">02.</span> Skills
+                </a>
+                <a href="#contact" style="--hover-color: #FF007A;" class="btn-radial btn-radial-secondary px-4 py-2 text-gray-700 dark:text-gray-400 hover:text-white dark:hover:text-white transition-colors flex items-center gap-2">
+                    <span class="text-xs opacity-50">03.</span> Contact
+                </a>
+                
+                <!-- Theme Toggle Desktop -->
+                <button style="--hover-color: #CCFF00;" class="theme-toggle-btn btn-radial ml-2 px-3 py-2 text-gray-900 dark:text-white hover:text-black dark:hover:text-black transition-colors">
+                    <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+                    <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+                </button>
+            </div>
+
+            <!-- Mobile Theme Toggle -->
+            <div class="flex items-center gap-4 md:hidden">
+                <button style="--hover-color: #CCFF00;" class="theme-toggle-btn btn-radial px-3 py-2 text-gray-900 dark:text-white hover:text-black dark:hover:text-black transition-colors">
+                    <i data-lucide="sun" class="w-5 h-5 hidden dark:block"></i>
+                    <i data-lucide="moon" class="w-5 h-5 block dark:hidden"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="relative z-10 pt-32 pb-20 px-6 max-w-7xl mx-auto">
+        
+        <section class="flex flex-col items-center justify-start pt-4 md:pt-8 relative text-center">
+            <div class="absolute inset-0 top-1/4 flex justify-center text-[100px] md:text-[200px] font-jp font-black text-black/[0.03] dark:text-white/[0.02] leading-none pointer-events-none select-none z-[-1] whitespace-nowrap transition-colors overflow-hidden">
+                開発者
+            </div>
+
+            <div class="inline-flex items-center gap-3 px-4 py-2 bg-[#CCFF00]/20 dark:bg-[#CCFF00]/10 border border-[#CCFF00]/30 rounded-none text-[#6B8E00] dark:text-[#CCFF00] font-mono text-xs uppercase tracking-widest mb-6">
+                <span class="w-2 h-2 rounded-full bg-[#CCFF00] animate-pulse"></span>
+                Next-Gen Product Experience
+            </div>
+            
+            <!-- Heading -->
+            <h1 class="text-4xl md:text-5xl lg:text-7xl font-bold leading-[1.1] tracking-tight text-gray-900 dark:text-white mb-6 max-w-4xl">
+                Experience How Your <br/>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-[#00E5FF] via-[#CCFF00] to-[#FF007A]">Website Can Feel.</span>
+            </h1>
+            
+            <p class="text-gray-600 dark:text-gray-400 text-lg md:text-xl max-w-2xl font-light mb-10">
+                Don't just build software. Create a feeling for your customers. Deliver a complete, unforgettable digital experience.
+            </p>
+
+            <div class="flex flex-wrap justify-center gap-4 font-mono mb-16 relative z-20">
+                <a href="#work" style="--hover-color: #CCFF00;" class="btn-radial px-8 py-4 bg-gray-900 dark:bg-white text-white dark:text-black font-bold border border-transparent transition-colors flex items-center gap-2 text-base">
+                    See the Product <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </a>
+                <a href="#contact" style="--hover-color: #FF007A;" class="btn-radial btn-radial-secondary px-8 py-4 bg-transparent border border-gray-400 dark:border-white/20 text-gray-900 dark:text-white transition-colors flex items-center gap-2 text-base">
+                    Contact Sales <i data-lucide="mail" class="w-4 h-4"></i>
+                </a>
+            </div>
+
+            <!-- Video Section (Overlaps the bottom of the section) -->
+            <div id="hero-video" style="max-width: 1024px; transition: max-width 0.2s ease-out;" class="w-full mx-auto relative -mb-32 md:-mb-48 aspect-video bg-gray-200 dark:bg-[#0A0A0A] border border-gray-300 dark:border-white/10 shadow-2xl flex items-center justify-center overflow-hidden group">
+                <!-- Decorative Gradient Overlay -->
+                <div class="absolute inset-0 bg-gradient-to-tr from-[#00E5FF]/20 via-transparent to-[#FF007A]/20 opacity-50 z-0"></div>
+                
+                <!-- Video Element -->
+                <video class="absolute inset-0 w-full h-full object-cover z-10 opacity-80" autoplay loop muted playsinline>
+                    <source src="Hero video.mp4" type="video/mp4">
+                </video>
+                
+                <!-- Play Button Overlay -->
+                <div class="z-20 w-20 h-20 bg-white/20 dark:bg-black/40 backdrop-blur-md border border-white/30 rounded-full flex items-center justify-center text-white cursor-pointer hover:bg-white/30 dark:hover:bg-white/10 hover:scale-110 transition-all duration-300">
+                    <i data-lucide="play" class="w-8 h-8 ml-2"></i>
+                </div>
+            </div>
+        </section>
+
+        <section id="skills" class="py-20 pt-40 md:pt-64 border-t border-gray-300 dark:border-white/5">
+            <div class="flex items-end justify-between mb-16">
+                <div>
+                    <p class="font-mono text-[#00E5FF] text-sm mb-2">// MY_SERVICES</p>
+                    <h2 class="text-3xl md:text-5xl font-bold uppercase tracking-tight text-gray-900 dark:text-white">My Services</h2>
+                </div>
+                <div class="font-jp text-4xl text-black/10 dark:text-white/10 hidden md:block select-none transition-colors">技能</div>
+            </div>
+
+            <div class="relative pb-32">
+                
+                <!-- Stack Card 1: Websites (Square edges only) -->
+                <div class="stack-card stack-1 rounded-none w-full bg-white dark:bg-[#111] backdrop-blur-xl border border-gray-300 dark:border-white/10 p-8 md:p-12 mb-12 flex flex-col md:flex-row gap-8 items-center justify-between group hover:border-[#00E5FF] transition-all">
+                    <div class="absolute top-4 right-8 font-jp text-8xl text-black/5 dark:text-white/5 pointer-events-none group-hover:text-[#00E5FF]/10 transition-colors">界</div>
+                    <div class="flex-1 z-10">
+                        <div class="w-16 h-16 bg-[#00E5FF]/10 flex items-center justify-center mb-6 text-[#00A3CC] dark:text-[#00E5FF] rounded-none">
+                            <i data-lucide="globe" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="scramble-text text-3xl font-bold mb-4 text-gray-900 dark:text-white" data-original-text="Websites">Websites</h3>
+                        <p class="text-gray-600 dark:text-gray-400 text-lg leading-relaxed mb-6 max-w-xl">
+                            Fast and beautiful websites that look perfect on phones, tablets, and computers.
+                        </p>
+                        <div class="flex flex-wrap gap-3 font-mono text-sm">
+                            <span class="px-4 py-2 bg-gray-100 dark:bg-black/50 text-[#00A3CC] dark:text-[#00E5FF] border border-gray-200 dark:border-white/5 rounded-none">Web Design</span>
+                            <span class="px-4 py-2 bg-gray-100 dark:bg-black/50 text-[#00A3CC] dark:text-[#00E5FF] border border-gray-200 dark:border-white/5 rounded-none">Super Fast</span>
+                        </div>
+                    </div>
+                    <div class="hidden lg:flex w-1/3 bg-gray-50 dark:bg-[#0A0A0A] h-64 border border-gray-200 dark:border-white/5 relative overflow-hidden items-center justify-center group-hover:bg-[#00E5FF]/5 group-hover:border-[#00E5FF]/30 transition-all rounded-none">
+                        <i data-lucide="layout-template" class="w-24 h-24 text-gray-300 dark:text-gray-800 group-hover:text-[#00E5FF]/50 transition-colors"></i>
+                    </div>
+                </div>
+
+                <!-- Stack Card 2: Software (Square edges only) -->
+                <div class="stack-card stack-2 rounded-none w-full bg-white dark:bg-[#111] backdrop-blur-xl border border-gray-300 dark:border-white/10 p-8 md:p-12 mb-12 flex flex-col md:flex-row gap-8 items-center justify-between group hover:border-[#FF007A] transition-all">
+                    <div class="absolute top-4 right-8 font-jp text-8xl text-black/5 dark:text-white/5 pointer-events-none group-hover:text-[#FF007A]/10 transition-colors">機</div>
+                    <div class="flex-1 z-10">
+                        <div class="w-16 h-16 bg-[#FF007A]/10 flex items-center justify-center mb-6 text-[#CC0062] dark:text-[#FF007A] rounded-none">
+                            <i data-lucide="cpu" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="scramble-text text-3xl font-bold mb-4 text-gray-900 dark:text-white" data-original-text="Software Systems">Software Systems</h3>
+                        <p class="text-gray-600 dark:text-gray-400 text-lg leading-relaxed mb-6 max-w-xl">
+                            Custom software to help your business run smoothly. Safe, secure, and built exactly for your needs.
+                        </p>
+                        <div class="flex flex-wrap gap-3 font-mono text-sm">
+                            <span class="px-4 py-2 bg-gray-100 dark:bg-black/50 text-[#CC0062] dark:text-[#FF007A] border border-gray-200 dark:border-white/5 rounded-none">Databases</span>
+                            <span class="px-4 py-2 bg-gray-100 dark:bg-black/50 text-[#CC0062] dark:text-[#FF007A] border border-gray-200 dark:border-white/5 rounded-none">Custom Tools</span>
+                        </div>
+                    </div>
+                    <div class="hidden lg:flex w-1/3 bg-gray-50 dark:bg-[#0A0A0A] h-64 border border-gray-200 dark:border-white/5 relative overflow-hidden items-center justify-center group-hover:bg-[#FF007A]/5 group-hover:border-[#FF007A]/30 transition-all rounded-none">
+                        <i data-lucide="database" class="w-24 h-24 text-gray-300 dark:text-gray-800 group-hover:text-[#FF007A]/50 transition-colors"></i>
+                    </div>
+                </div>
+
+                <!-- Stack Card 3: Apps (Square edges only) -->
+                <div class="stack-card stack-3 rounded-none w-full bg-white dark:bg-[#111] backdrop-blur-xl border border-gray-300 dark:border-white/10 p-8 md:p-12 flex flex-col md:flex-row gap-8 items-center justify-between group hover:border-[#CCFF00] transition-all">
+                     <div class="absolute top-4 right-8 font-jp text-8xl text-black/5 dark:text-white/5 pointer-events-none group-hover:text-[#CCFF00]/10 transition-colors">携</div>
+                    <div class="flex-1 z-10">
+                        <div class="w-16 h-16 bg-[#CCFF00]/10 flex items-center justify-center mb-6 text-[#88B300] dark:text-[#CCFF00] rounded-none">
+                            <i data-lucide="smartphone" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="scramble-text text-3xl font-bold mb-4 text-gray-900 dark:text-white" data-original-text="Mobile Apps">Mobile Apps</h3>
+                        <p class="text-gray-600 dark:text-gray-400 text-lg leading-relaxed mb-6 max-w-xl">
+                            Mobile apps for iPhone and Android. Simple, fast, and easy for your customers to use anywhere.
+                        </p>
+                        <div class="flex flex-wrap gap-3 font-mono text-sm">
+                            <span class="px-4 py-2 bg-gray-100 dark:bg-black/50 text-[#88B300] dark:text-[#CCFF00] border border-gray-200 dark:border-white/5 rounded-none">iPhone Apps</span>
+                            <span class="px-4 py-2 bg-gray-100 dark:bg-black/50 text-[#88B300] dark:text-[#CCFF00] border border-gray-200 dark:border-white/5 rounded-none">Android Apps</span>
+                        </div>
+                    </div>
+                    <div class="hidden lg:flex w-1/3 bg-gray-50 dark:bg-[#0A0A0A] h-64 border border-gray-200 dark:border-white/5 relative overflow-hidden items-center justify-center group-hover:bg-[#CCFF00]/5 group-hover:border-[#CCFF00]/30 transition-all rounded-none">
+                        <i data-lucide="smartphone-nfc" class="w-24 h-24 text-gray-300 dark:text-gray-800 group-hover:text-[#CCFF00]/50 transition-colors"></i>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <section id="featured-projects" class="py-20 border-t border-gray-300 dark:border-white/5 overflow-hidden">
+            <p class="font-mono text-[#00E5FF] text-sm mb-2">// FEATURED_PROJECTS</p>
+            <h2 class="text-3xl md:text-5xl font-bold uppercase tracking-tight mb-12 text-gray-900 dark:text-white">Selected Works</h2>
+
+            <div class="relative w-full flex overflow-x-hidden pt-4 pb-4">
+                <!-- Overlay gradients for smooth fade out -->
+                <div class="absolute left-0 top-0 bottom-0 w-12 md:w-32 bg-gradient-to-r from-[#FAFAFA] dark:from-[#050505] to-transparent z-10 pointer-events-none transition-colors"></div>
+                <div class="absolute right-0 top-0 bottom-0 w-12 md:w-32 bg-gradient-to-l from-[#FAFAFA] dark:from-[#050505] to-transparent z-10 pointer-events-none transition-colors"></div>
+
+                <!-- Scrolling container -->
+                <div class="marquee-scroll-wrapper" style="will-change: transform;">
+                    <div class="flex gap-6 w-max animate-marquee hover:[animation-play-state:paused]">
+                        <!-- First Set -->
+                    <div class="flex gap-6">
+                        <a href="https://content-flow-murex.vercel.app/" target="_blank" style="--hover-color: #00E5FF;" class="card-radial group w-48 h-40 md:w-64 md:h-48 flex-shrink-0 bg-white dark:bg-[#111] border border-gray-200 dark:border-white/10 flex flex-col items-center justify-center transition-all rounded-none cursor-pointer relative overflow-hidden">
+                            <span class="text-xl md:text-2xl font-bold text-gray-800 dark:text-white group-hover:text-black flex items-center gap-2 transition-all duration-300 group-hover:-translate-y-2 z-10 relative">
+                                <i data-lucide="layers" class="w-8 h-8 group-hover:text-black transition-colors"></i> ContentFLow
+                            </span>
+                            <span class="absolute bottom-6 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300 z-10 flex items-center gap-1 text-sm font-bold text-gray-800 dark:text-white group-hover:text-black uppercase tracking-wider">
+                                Open <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                            </span>
+                        </a>
+                        <a href="https://roadmappp.vercel.app/" target="_blank" style="--hover-color: #CCFF00;" class="card-radial group w-48 h-40 md:w-64 md:h-48 flex-shrink-0 bg-white dark:bg-[#111] border border-gray-200 dark:border-white/10 flex flex-col items-center justify-center transition-all rounded-none cursor-pointer relative overflow-hidden">
+                            <span class="text-xl md:text-2xl font-bold text-gray-800 dark:text-white group-hover:text-black flex items-center gap-2 transition-all duration-300 group-hover:-translate-y-2 z-10 relative">
+                                <i data-lucide="map" class="w-8 h-8 group-hover:text-black transition-colors"></i> Roadmappp
+                            </span>
+                            <span class="absolute bottom-6 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300 z-10 flex items-center gap-1 text-sm font-bold text-gray-800 dark:text-white group-hover:text-black uppercase tracking-wider">
+                                Open <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                            </span>
+                        </a>
+                        <a href="https://lvl-up-kappa.vercel.app/" target="_blank" style="--hover-color: #FF007A;" class="card-radial group w-48 h-40 md:w-64 md:h-48 flex-shrink-0 bg-white dark:bg-[#111] border border-gray-200 dark:border-white/10 flex flex-col items-center justify-center transition-all rounded-none cursor-pointer relative overflow-hidden">
+                            <span class="text-xl md:text-2xl font-bold text-gray-800 dark:text-white group-hover:text-white flex items-center gap-2 transition-all duration-300 group-hover:-translate-y-2 z-10 relative">
+                                <i data-lucide="zap" class="w-8 h-8 group-hover:text-white transition-colors"></i> Lvl-up
+                            </span>
+                            <span class="absolute bottom-6 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300 z-10 flex items-center gap-1 text-sm font-bold text-gray-800 dark:text-white group-hover:text-white uppercase tracking-wider">
+                                Open <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                            </span>
+                        </a>
+                        <a href="https://assent-global-frontend.vercel.app/" target="_blank" style="--hover-color: #4CAF50;" class="card-radial group w-48 h-40 md:w-64 md:h-48 flex-shrink-0 bg-white dark:bg-[#111] border border-gray-200 dark:border-white/10 flex flex-col items-center justify-center transition-all rounded-none cursor-pointer relative overflow-hidden">
+                            <span class="text-xl md:text-2xl font-bold text-gray-800 dark:text-white group-hover:text-white flex items-center gap-2 transition-all duration-300 group-hover:-translate-y-2 z-10 relative">
+                                <i data-lucide="globe" class="w-8 h-8 group-hover:text-white transition-colors"></i> Assent Global
+                            </span>
+                            <span class="absolute bottom-6 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300 z-10 flex items-center gap-1 text-sm font-bold text-gray-800 dark:text-white group-hover:text-white uppercase tracking-wider">
+                                Open <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                            </span>
+                        </a>
+                        <a href="https://www.techez.in/" target="_blank" style="--hover-color: #673AB7;" class="card-radial group w-48 h-40 md:w-64 md:h-48 flex-shrink-0 bg-white dark:bg-[#111] border border-gray-200 dark:border-white/10 flex flex-col items-center justify-center transition-all rounded-none cursor-pointer relative overflow-hidden">
+                            <span class="text-xl md:text-2xl font-bold text-gray-800 dark:text-white group-hover:text-white flex items-center gap-2 transition-all duration-300 group-hover:-translate-y-2 z-10 relative">
+                                <i data-lucide="code" class="w-8 h-8 group-hover:text-white transition-colors"></i> Techez.in
+                            </span>
+                            <span class="absolute bottom-6 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300 z-10 flex items-center gap-1 text-sm font-bold text-gray-800 dark:text-white group-hover:text-white uppercase tracking-wider">
+                                Open <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                            </span>
+                        </a>
+                        <a href="https://munch-mate-five.vercel.app/" target="_blank" style="--hover-color: #FF9800;" class="card-radial group w-48 h-40 md:w-64 md:h-48 flex-shrink-0 bg-white dark:bg-[#111] border border-gray-200 dark:border-white/10 flex flex-col items-center justify-center transition-all rounded-none cursor-pointer relative overflow-hidden">
+                            <span class="text-xl md:text-2xl font-bold text-gray-800 dark:text-white group-hover:text-black flex items-center gap-2 transition-all duration-300 group-hover:-translate-y-2 z-10 relative">
+                                <i data-lucide="coffee" class="w-8 h-8 group-hover:text-black transition-colors"></i> Munch Mate
+                            </span>
+                            <span class="absolute bottom-6 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300 z-10 flex items-center gap-1 text-sm font-bold text-gray-800 dark:text-white group-hover:text-black uppercase tracking-wider">
+                                Open <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                            </span>
+                        </a>
+                        <a href="https://cravoro-cafe.vercel.app/" target="_blank" style="--hover-color: #F44336;" class="card-radial group w-48 h-40 md:w-64 md:h-48 flex-shrink-0 bg-white dark:bg-[#111] border border-gray-200 dark:border-white/10 flex flex-col items-center justify-center transition-all rounded-none cursor-pointer relative overflow-hidden">
+                            <span class="text-xl md:text-2xl font-bold text-gray-800 dark:text-white group-hover:text-white flex items-center gap-2 transition-all duration-300 group-hover:-translate-y-2 z-10 relative">
+                                <i data-lucide="star" class="w-8 h-8 group-hover:text-white transition-colors"></i> Cravoro
+                            </span>
+                            <span class="absolute bottom-6 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300 z-10 flex items-center gap-1 text-sm font-bold text-gray-800 dark:text-white group-hover:text-white uppercase tracking-wider">
+                                Open <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                            </span>
+                        </a>
+                    </div>
+                    
+                    <!-- Second Set (Duplicate for seamless loop) -->
+                    <div class="flex gap-6">
+                        <a href="https://content-flow-murex.vercel.app/" target="_blank" style="--hover-color: #00E5FF;" class="card-radial group w-48 h-40 md:w-64 md:h-48 flex-shrink-0 bg-white dark:bg-[#111] border border-gray-200 dark:border-white/10 flex flex-col items-center justify-center transition-all rounded-none cursor-pointer relative overflow-hidden">
+                            <span class="text-xl md:text-2xl font-bold text-gray-800 dark:text-white group-hover:text-black flex items-center gap-2 transition-all duration-300 group-hover:-translate-y-2 z-10 relative">
+                                <i data-lucide="layers" class="w-8 h-8 group-hover:text-black transition-colors"></i> ContentFLow
+                            </span>
+                            <span class="absolute bottom-6 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300 z-10 flex items-center gap-1 text-sm font-bold text-gray-800 dark:text-white group-hover:text-black uppercase tracking-wider">
+                                Open <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                            </span>
+                        </a>
+                        <a href="https://roadmappp.vercel.app/" target="_blank" style="--hover-color: #CCFF00;" class="card-radial group w-48 h-40 md:w-64 md:h-48 flex-shrink-0 bg-white dark:bg-[#111] border border-gray-200 dark:border-white/10 flex flex-col items-center justify-center transition-all rounded-none cursor-pointer relative overflow-hidden">
+                            <span class="text-xl md:text-2xl font-bold text-gray-800 dark:text-white group-hover:text-black flex items-center gap-2 transition-all duration-300 group-hover:-translate-y-2 z-10 relative">
+                                <i data-lucide="map" class="w-8 h-8 group-hover:text-black transition-colors"></i> Roadmappp
+                            </span>
+                            <span class="absolute bottom-6 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300 z-10 flex items-center gap-1 text-sm font-bold text-gray-800 dark:text-white group-hover:text-black uppercase tracking-wider">
+                                Open <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                            </span>
+                        </a>
+                        <a href="https://lvl-up-kappa.vercel.app/" target="_blank" style="--hover-color: #FF007A;" class="card-radial group w-48 h-40 md:w-64 md:h-48 flex-shrink-0 bg-white dark:bg-[#111] border border-gray-200 dark:border-white/10 flex flex-col items-center justify-center transition-all rounded-none cursor-pointer relative overflow-hidden">
+                            <span class="text-xl md:text-2xl font-bold text-gray-800 dark:text-white group-hover:text-white flex items-center gap-2 transition-all duration-300 group-hover:-translate-y-2 z-10 relative">
+                                <i data-lucide="zap" class="w-8 h-8 group-hover:text-white transition-colors"></i> Lvl-up
+                            </span>
+                            <span class="absolute bottom-6 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300 z-10 flex items-center gap-1 text-sm font-bold text-gray-800 dark:text-white group-hover:text-white uppercase tracking-wider">
+                                Open <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                            </span>
+                        </a>
+                        <a href="https://assent-global-frontend.vercel.app/" target="_blank" style="--hover-color: #4CAF50;" class="card-radial group w-48 h-40 md:w-64 md:h-48 flex-shrink-0 bg-white dark:bg-[#111] border border-gray-200 dark:border-white/10 flex flex-col items-center justify-center transition-all rounded-none cursor-pointer relative overflow-hidden">
+                            <span class="text-xl md:text-2xl font-bold text-gray-800 dark:text-white group-hover:text-white flex items-center gap-2 transition-all duration-300 group-hover:-translate-y-2 z-10 relative">
+                                <i data-lucide="globe" class="w-8 h-8 group-hover:text-white transition-colors"></i> Assent Global
+                            </span>
+                            <span class="absolute bottom-6 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300 z-10 flex items-center gap-1 text-sm font-bold text-gray-800 dark:text-white group-hover:text-white uppercase tracking-wider">
+                                Open <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                            </span>
+                        </a>
+                        <a href="https://www.techez.in/" target="_blank" style="--hover-color: #673AB7;" class="card-radial group w-48 h-40 md:w-64 md:h-48 flex-shrink-0 bg-white dark:bg-[#111] border border-gray-200 dark:border-white/10 flex flex-col items-center justify-center transition-all rounded-none cursor-pointer relative overflow-hidden">
+                            <span class="text-xl md:text-2xl font-bold text-gray-800 dark:text-white group-hover:text-white flex items-center gap-2 transition-all duration-300 group-hover:-translate-y-2 z-10 relative">
+                                <i data-lucide="code" class="w-8 h-8 group-hover:text-white transition-colors"></i> Techez.in
+                            </span>
+                            <span class="absolute bottom-6 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300 z-10 flex items-center gap-1 text-sm font-bold text-gray-800 dark:text-white group-hover:text-white uppercase tracking-wider">
+                                Open <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                            </span>
+                        </a>
+                        <a href="https://munch-mate-five.vercel.app/" target="_blank" style="--hover-color: #FF9800;" class="card-radial group w-48 h-40 md:w-64 md:h-48 flex-shrink-0 bg-white dark:bg-[#111] border border-gray-200 dark:border-white/10 flex flex-col items-center justify-center transition-all rounded-none cursor-pointer relative overflow-hidden">
+                            <span class="text-xl md:text-2xl font-bold text-gray-800 dark:text-white group-hover:text-black flex items-center gap-2 transition-all duration-300 group-hover:-translate-y-2 z-10 relative">
+                                <i data-lucide="coffee" class="w-8 h-8 group-hover:text-black transition-colors"></i> Munch Mate
+                            </span>
+                            <span class="absolute bottom-6 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300 z-10 flex items-center gap-1 text-sm font-bold text-gray-800 dark:text-white group-hover:text-black uppercase tracking-wider">
+                                Open <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                            </span>
+                        </a>
+                        <a href="https://cravoro-cafe.vercel.app/" target="_blank" style="--hover-color: #F44336;" class="card-radial group w-48 h-40 md:w-64 md:h-48 flex-shrink-0 bg-white dark:bg-[#111] border border-gray-200 dark:border-white/10 flex flex-col items-center justify-center transition-all rounded-none cursor-pointer relative overflow-hidden">
+                            <span class="text-xl md:text-2xl font-bold text-gray-800 dark:text-white group-hover:text-white flex items-center gap-2 transition-all duration-300 group-hover:-translate-y-2 z-10 relative">
+                                <i data-lucide="star" class="w-8 h-8 group-hover:text-white transition-colors"></i> Cravoro
+                            </span>
+                            <span class="absolute bottom-6 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300 z-10 flex items-center gap-1 text-sm font-bold text-gray-800 dark:text-white group-hover:text-white uppercase tracking-wider">
+                                Open <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                            </span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="work" class="py-20 border-t border-gray-300 dark:border-white/5">
+            <p class="font-mono text-[#FF007A] text-sm mb-2">// MY_WORK</p>
+            <h2 class="text-3xl md:text-5xl font-bold uppercase tracking-tight mb-12 text-gray-900 dark:text-white">Recent Projects</h2>
+
+            <div class="flex flex-col border-b border-gray-300 dark:border-white/5">
+                <a href="#" class="group py-8 border-t border-gray-300 dark:border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-black/5 dark:hover:bg-white/[0.02] transition-colors px-4 -mx-4 rounded-none">
+                    <div class="flex items-center gap-8">
+                        <span class="font-mono text-gray-500 dark:text-gray-600 text-sm">01</span>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white group-hover:text-[#88B300] dark:group-hover:text-[#CCFF00] transition-colors">Online Store</h3>
+                            <p class="text-gray-600 dark:text-gray-500 text-sm mt-1">A shop to sell products online</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span class="px-3 py-1 bg-gray-200 dark:bg-white/5 text-gray-800 dark:text-gray-300 text-xs font-mono rounded-none">Web</span>
+                        <i data-lucide="arrow-up-right" class="text-gray-500 dark:text-gray-600 group-hover:text-[#CCFF00] transition-colors"></i>
+                    </div>
+                </a>
+
+                <a href="#" class="group py-8 border-t border-gray-300 dark:border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-black/5 dark:hover:bg-white/[0.02] transition-colors px-4 -mx-4 rounded-none">
+                    <div class="flex items-center gap-8">
+                        <span class="font-mono text-gray-500 dark:text-gray-600 text-sm">02</span>
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white group-hover:text-[#00A3CC] dark:group-hover:text-[#00E5FF] transition-colors">Business Tool</h3>
+                            <p class="text-gray-600 dark:text-gray-500 text-sm mt-1">System to track business data</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span class="px-3 py-1 bg-gray-200 dark:bg-white/5 text-gray-800 dark:text-gray-300 text-xs font-mono rounded-none">Software</span>
+                        <i data-lucide="arrow-up-right" class="text-gray-500 dark:text-gray-600 group-hover:text-[#00E5FF] transition-colors"></i>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+    </main>
+
+    <footer id="contact" class="bg-[#E4E4E7] dark:bg-[#111] border-t border-gray-300 dark:border-white/10 relative overflow-hidden transition-colors duration-300">
+        <div class="absolute left-0 bottom-0 text-[100px] md:text-[200px] font-jp font-black text-black/5 dark:text-white/[0.015] leading-none pointer-events-none select-none z-0 transform translate-y-1/4 -translate-x-1/4 transition-colors">
+            連絡
+        </div>
+
+        <div class="max-w-7xl mx-auto px-6 py-20 relative z-10 flex flex-col md:flex-row justify-between items-center gap-8">
+            <div class="text-center md:text-left">
+                <h2 class="text-4xl font-bold uppercase tracking-tighter mb-4 text-gray-900 dark:text-white">Let's work together.</h2>
+                <a href="mailto:vanshamkamboj16@gmail.com" class="text-xl font-mono text-gray-700 dark:text-gray-400 hover:text-[#88B300] dark:hover:text-[#CCFF00] transition-colors">
+                    vanshamkamboj16@gmail.com
+                </a>
+            </div>
+            
+            <div class="flex gap-6">
+                <!-- Social Icons (Square edges requested by style) -->
+                <a href="#" class="w-14 h-14 rounded-none border border-gray-400 dark:border-white/20 flex items-center justify-center hover:border-[#00E5FF] hover:bg-[#00E5FF]/10 hover:text-[#00E5FF] dark:hover:border-[#00E5FF] transition-all hover:-translate-y-1 bg-white dark:bg-black text-gray-800 dark:text-white">
+                    <i data-lucide="github" class="w-6 h-6"></i>
+                </a>
+                <a href="#" class="w-14 h-14 rounded-none border border-gray-400 dark:border-white/20 flex items-center justify-center hover:border-[#FF007A] hover:bg-[#FF007A]/10 hover:text-[#FF007A] dark:hover:border-[#FF007A] transition-all hover:-translate-y-1 bg-white dark:bg-black text-gray-800 dark:text-white">
+                    <i data-lucide="twitter" class="w-6 h-6"></i>
+                </a>
+                <a href="#" class="w-14 h-14 rounded-none border border-gray-400 dark:border-white/20 flex items-center justify-center hover:border-[#CCFF00] hover:bg-[#CCFF00]/10 hover:text-[#88B300] dark:hover:text-[#CCFF00] dark:hover:border-[#CCFF00] transition-all hover:-translate-y-1 bg-white dark:bg-black text-gray-800 dark:text-white">
+                    <i data-lucide="linkedin" class="w-6 h-6"></i>
+                </a>
+            </div>
+        </div>
+        
+        <div class="border-t border-gray-300 dark:border-white/5 py-6 text-center">
+            <p class="font-mono text-xs text-gray-600 dark:text-gray-500 uppercase tracking-widest">
+                &copy; 2026 Kamboz.dev // All rights reserved.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // 1. Initialize Icons
+        lucide.createIcons();
+
+        // 2. Dark/Light Mode Logic
+        const html = document.documentElement;
+        const themeToggleBtns = document.querySelectorAll('.theme-toggle-btn');
+        
+        // Load preference
+        if (localStorage.getItem('theme') === 'light' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: light)').matches)) {
+            html.classList.remove('dark');
+        } else {
+            html.classList.add('dark'); // Default to dark
+        }
+
+        themeToggleBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                html.classList.toggle('dark');
+                localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+            });
+        });
+
+        // 3. Character Scramble Animation (Fires cleanly on scroll)
+        const chars = '!<>-_\\/[]{}—=+*^?#________';
+        function scrambleText(el) {
+            const originalText = el.dataset.originalText;
+            let iterations = 0;
+            
+            clearInterval(el.scrambleInterval);
+            
+            el.scrambleInterval = setInterval(() => {
+                el.innerText = originalText.split('').map((letter, index) => {
+                    if(index < iterations) return originalText[index];
+                    return chars[Math.floor(Math.random() * chars.length)];
+                }).join('');
+                
+                if(iterations >= originalText.length) {
+                    clearInterval(el.scrambleInterval);
+                    el.innerText = originalText;
+                }
+                iterations += 1/3;
+            }, 30);
+        }
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const heading = entry.target.querySelector('.scramble-text');
+                if(entry.isIntersecting && heading) {
+                    // Only trigger if it hasn't just triggered to prevent spamming
+                    if(!heading.classList.contains('scrambling')) {
+                        heading.classList.add('scrambling');
+                        scrambleText(heading);
+                    }
+                } else if(heading) {
+                    // Reset when scrolled out of view so it can fire again
+                    heading.classList.remove('scrambling');
+                }
+            });
+        }, { threshold: 0.3 }); 
+
+        document.querySelectorAll('.stack-card').forEach(card => observer.observe(card));
+
+        // 4. Hero Video Scroll Animation & Marquee Flow Effect
+        const heroVideo = document.getElementById('hero-video');
+        const marquees = document.querySelectorAll('.animate-marquee');
+        const mainNav = document.getElementById('main-nav');
+        let lastScrollY = window.scrollY;
+        let scrollVelocity = 0;
+
+        window.addEventListener('scroll', () => {
+            const currentScrollY = window.scrollY;
+            scrollVelocity = currentScrollY - lastScrollY;
+            lastScrollY = currentScrollY;
+
+            if (mainNav) {
+                if (scrollVelocity > 5 && currentScrollY > 100) {
+                    mainNav.classList.remove('translate-y-0');
+                    mainNav.classList.add('-translate-y-full');
+                } else if (scrollVelocity < -5 || currentScrollY <= 100) {
+                    mainNav.classList.remove('-translate-y-full');
+                    mainNav.classList.add('translate-y-0');
+                }
+            }
+
+            if (heroVideo) {
+                const rect = heroVideo.getBoundingClientRect();
+                const windowHeight = window.innerHeight;
+                const videoCenterY = rect.top + rect.height / 2;
+                const screenCenterY = windowHeight / 2;
+                
+                const distance = Math.abs(videoCenterY - screenCenterY);
+                const maxDistance = windowHeight / 2;
+                
+                let ratio = 1 - (distance / maxDistance);
+                if (ratio < 0) ratio = 0;
+                
+                const minWidth = 1024;
+                const maxWidth = window.innerWidth;
+                const currentMaxWidth = minWidth + (maxWidth - minWidth) * ratio;
+                heroVideo.style.maxWidth = currentMaxWidth + 'px';
+            }
+        });
+
+        function renderMarqueeSkew() {
+            scrollVelocity *= 0.9;
+            const skewAmount = Math.max(-15, Math.min(15, scrollVelocity * 0.2));
+            const baseScroll = window.scrollY * 0.4;
+            
+            marquees.forEach(m => {
+                m.style.transform = `skewX(${Math.abs(scrollVelocity) > 0.1 ? skewAmount : 0}deg)`;
+            });
+
+            document.querySelectorAll('.marquee-scroll-wrapper').forEach(wrapper => {
+                wrapper.style.transform = `translateX(${-baseScroll}px)`;
+            });
+
+            requestAnimationFrame(renderMarqueeSkew);
+        }
+        renderMarqueeSkew();
+
+        // 5. Starry Galaxy Canvas Animation
+        const canvas = document.getElementById('star-canvas');
+        if (canvas) {
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            let particles = [];
+            
+            function resize() {
+                width = window.innerWidth;
+                height = window.innerHeight;
+                canvas.width = width;
+                canvas.height = height;
+                initParticles();
+            }
+            
+            function initParticles() {
+                particles = [];
+                const numParticles = Math.floor((width * height) / 4000); 
+                for (let i = 0; i < numParticles; i++) {
+                    const bx = Math.random() * width;
+                    const by = Math.random() * height;
+                    particles.push({
+                        x: bx, y: by, baseX: bx, baseY: by,
+                        size: Math.random() * 2 + 1,
+                        baseOpacity: Math.random() * 0.5 + 0.5,
+                        opacity: 0,
+                        type: Math.random() > 0.85 ? 'blackhole' : 'hide',
+                        vx: 0, vy: 0,
+                        colorType: Math.random() > 0.5 ? 'blue' : 'green'
+                    });
+                    particles[i].opacity = particles[i].baseOpacity;
+                }
+            }
+            
+            window.addEventListener('resize', resize);
+            resize();
+            
+            let mouseX = -1000;
+            let mouseY = -1000;
+            window.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            });
+            
+            const isDark = () => document.documentElement.classList.contains('dark');
+            let time = 0;
+            
+            function animateCanvas() {
+                time += 0.005;
+                ctx.clearRect(0, 0, width, height);
+                const isDarkMode = isDark();
+                
+                particles.forEach(p => {
+                    const dx = mouseX - p.x;
+                    const dy = mouseY - p.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const radius = 150;
+
+                    if (dist < radius) {
+                        if (p.type === 'hide') {
+                            p.opacity = Math.max(0, p.opacity - 0.05);
+                            p.vx -= (dx / dist) * 0.1;
+                            p.vy -= (dy / dist) * 0.1;
+                        } else {
+                            const force = (radius - dist) / radius;
+                            p.vx += (dx / dist) * force * 0.8;
+                            p.vy += (dy / dist) * force * 0.8;
+                            p.opacity = Math.min(1, p.opacity + 0.05);
+                            if (dist < 10) {
+                                p.x = p.baseX;
+                                p.y = p.baseY;
+                                p.vx = 0;
+                                p.vy = 0;
+                                p.opacity = 0;
+                            }
+                        }
+                    } else {
+                        p.vx += (p.baseX - p.x) * 0.02;
+                        p.vy += (p.baseY - p.y) * 0.02;
+                        if (p.opacity < p.baseOpacity) {
+                            p.opacity += 0.01;
+                        } else if (p.opacity > p.baseOpacity) {
+                            p.opacity -= 0.01;
+                        }
+                    }
+                    
+                    p.vx *= 0.85;
+                    p.vy *= 0.85;
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    
+                    if(p.opacity > 0) {
+                        ctx.beginPath();
+                        const breath = Math.sin(time + p.baseX * 0.005) * 0.4 + 0.6; 
+                        ctx.arc(p.x, p.y, p.size * breath, 0, Math.PI * 2);
+                        
+                        let colorStr;
+                        if (isDarkMode) {
+                            colorStr = p.colorType === 'blue' ? '0, 229, 255' : '0, 255, 136'; // Cyan & Bright Green
+                        } else {
+                            colorStr = p.colorType === 'blue' ? '0, 85, 170' : '0, 136, 0'; // Dark Blue & Dark Green
+                        }
+                        
+                        ctx.fillStyle = `rgba(${colorStr}, ${p.opacity * breath})`;
+                        ctx.fill();
+                    }
+                });
+                
+                requestAnimationFrame(animateCanvas);
+            }
+            animateCanvas();
+        }
+
+    </script>
+</body>
+</html>
